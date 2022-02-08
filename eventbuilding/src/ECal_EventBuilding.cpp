@@ -30,8 +30,8 @@ void EventBuilder::Check() {
 
   //Input Tree Name
   if(_inputTreeName == "") {
-    std::cout << "Input TTree name empty. Using default name: " << _inputTreeNameDefault << std::endl;
-    _inputTreeName = _inputTreeNameDefault;
+    std::cout << "Input TTree name empty. Using default name: " << _inputTreeNameDefault + std::to_string(_runNumber) << std::endl;
+    _inputTreeName = _inputTreeNameDefault + std::to_string(_runNumber);
   }
 
   //Output File Name
@@ -82,10 +82,78 @@ void EventBuilder::Check() {
     _maskedFile = _maskedFileDefault;  
   }
 
+  //Checking run mode
+  
+  if(_excMode == "setup")  _setup = true;
+  else if(_excMode == "debug") _debug = true;
+  else if(_excMode != "default") { 
+    std::cout << "Empty or wrong Run Mode: " << _maskedFileDefault << ". Setting to default" << std::endl;
+    _excMode = "default";
+  }
+
+  
+  
 }
 
 
 bool EventBuilder::Init() {
+  
+  if(_setup) tools = new ECalTools();
+  else tools = new ECalTools(true, "LogROOT_ECalEventBuilding_" + std::to_string(_runNumber) + ".root",_debug);
+  
+  // --- Reading the txt files
+  mapping = tools->ReadMappingFile(_commissioningFolder + _mappingFile);
+  if(mapping == nullptr) {
+    std::cout << "Could not open mapping file: " << _commissioningFolder + _mappingFile << std::endl;
+    return false;
+  }
+  
+  cobMapping = tools->ReadMappingFile(_commissioningFolder + _mappingFileCob);
+  if(cobMapping == nullptr) {
+    std::cout << "Could not open cob mapping file: " << _commissioningFolder + _mappingFileCob << std::endl;
+    return false;
+  }
+
+  ecalConfig = tools->ReadConfigFile(_commissioningFolder + _configFile);
+  if(ecalConfig == nullptr) {
+    std::cout << "Could not open the configuration file: " << _commissioningFolder + _configFile << std::endl;
+    return false;
+  }
+
+  pedestalsMap = tools->ReadPedestalsFile(_commissioningFolder + _pedestalsFile);
+  if(pedestalsMap == nullptr) {
+    std::cout << "Could not open the pedestals file: " << _commissioningFolder + _pedestalsFile << std::endl;
+    return false;
+  }
+
+  calibrationMap = tools->ReadCalibrationFile(_commissioningFolder + _mipCalibrationFile);
+  if(calibrationMap == nullptr) {
+    std::cout << "Could not open the calibration file: " << _commissioningFolder + _mipCalibrationFile << std::endl;
+    return false;
+  }
+
+  maskedMap = tools->ReadMaskedFile(_commissioningFolder + _maskedFile);
+  if(maskedMap == nullptr) {
+    std::cout << "Could not open the masked file: " << _commissioningFolder + _maskedFile << std::endl;
+    return false;
+  }
+
+  if(_debug || _setup) {
+    std::cout << "--------- Mapping File ---------" << std::endl; 
+    tools->DisplayMapping(mapping);
+    std::cout << "--------- Cob mapping File ---------" << std::endl; 
+    tools->DisplayMapping(cobMapping);
+    std::cout << "--------- Configuration File ---------" << std::endl;
+    tools->DisplayConfiguration(ecalConfig);
+    std::cout << "--------- Pedestals File ---------" << std::endl;
+    tools->DisplayPedestals(pedestalsMap);
+    std::cout << "--------- Calibration File ---------" << std::endl;
+    tools->DisplayCalibration(calibrationMap);
+    std::cout << "--------- Masked File ---------" << std::endl;
+    tools->DisplayMasked(maskedMap);
+  }
+
+  if(_setup) return false;
 
   // --- Opening input TFile
   inputFile = new TFile(_inputFileName.c_str(), "READ", "InputFile");
@@ -113,58 +181,6 @@ bool EventBuilder::Init() {
 
   // --- Adjusting the maximun number of entries if necessary
   if(_maxEntries > inputTree->GetEntries() || _maxEntries <= 0) _maxEntries = inputTree->GetEntries();
-
-  // --- Reading the txt files
-  mapping = tools.ReadMappingFile(_commissioningFolder + _mappingFile);
-  if(mapping == nullptr) {
-    std::cout << "Could not open mapping file: " << _commissioningFolder + _mappingFile << std::endl;
-    return false;
-  }
-  
-  cobMapping = tools.ReadMappingFile(_commissioningFolder + _mappingFileCob);
-  if(cobMapping == nullptr) {
-    std::cout << "Could not open cob mapping file: " << _commissioningFolder + _mappingFileCob << std::endl;
-    return false;
-  }
-
-  ecalConfig = tools.ReadConfigFile(_commissioningFolder + _configFile);
-  if(ecalConfig == nullptr) {
-    std::cout << "Could not open the configuration file: " << _commissioningFolder + _configFile << std::endl;
-    return false;
-  }
-
-  pedestalsMap = tools.ReadPedestalsFile(_commissioningFolder + _pedestalsFile);
-  if(pedestalsMap == nullptr) {
-    std::cout << "Could not open the pedestals file: " << _commissioningFolder + _pedestalsFile << std::endl;
-    return false;
-  }
-
-  calibrationMap = tools.ReadCalibrationFile(_commissioningFolder + _mipCalibrationFile);
-  if(calibrationMap == nullptr) {
-    std::cout << "Could not open the calibration file: " << _commissioningFolder + _mipCalibrationFile << std::endl;
-    return false;
-  }
-
-  maskedMap = tools.ReadMaskedFile(_commissioningFolder + _maskedFile);
-  if(maskedMap == nullptr) {
-    std::cout << "Could not open the masked file: " << _commissioningFolder + _maskedFile << std::endl;
-    return false;
-  }
-
-  if(_debug) {
-    std::cout << "--------- Mapping File ---------" << std::endl; 
-    tools.DisplayMapping(mapping);
-    std::cout << "--------- Cob mapping File ---------" << std::endl; 
-    tools.DisplayMapping(cobMapping);
-    std::cout << "--------- Configuration File ---------" << std::endl;
-    tools.DisplayConfiguration(ecalConfig);
-    std::cout << "--------- Pedestals File ---------" << std::endl;
-    tools.DisplayPedestals(pedestalsMap);
-    std::cout << "--------- Calibration File ---------" << std::endl;
-    tools.DisplayCalibration(calibrationMap);
-    std::cout << "--------- Masked File ---------" << std::endl;
-    tools.DisplayMasked(maskedMap);
-  }
   
   // --- Creating the output File
   outputWriter = LCFactory::getInstance()->createLCWriter();
@@ -172,7 +188,7 @@ bool EventBuilder::Init() {
   outputWriter->open(_outputFileName.c_str(), LCIO::WRITE_NEW);
 
   LCRunHeaderImpl* runHeader = new LCRunHeaderImpl();
-  runHeader->setRunNumber(runNumber);
+  runHeader->setRunNumber(_runNumber);
   runHeader->setDetectorName(detectorName);
 
   outputWriter->writeRunHeader(runHeader);
@@ -184,6 +200,9 @@ bool EventBuilder::Init() {
     std::cout << "Processing a total of " << _maxEntries << "." << std::endl;
   }
 
+  evtNr = readoutNr = 1;
+
+  
   return true;
 }
 
@@ -192,45 +211,43 @@ void EventBuilder::BuildEvents() {
 
   if(_debug) std::cout << "Starting the loop over the input" << std::endl;
 
-  int evtNr = 1;
-
   for(Long64_t iEntry = 0; iEntry < _maxEntries; iEntry++) {
     inputTree->GetEntry(iEntry);
     
     std::map<int, std::vector<ECalHit>> bcidMap = {};
+    int nHitsReadout = 0;
     
     for(int iSlab = 0; iSlab < SLBDEPTH; iSlab++) {
+      if(rawEvent.slot[iSlab] == -1) continue;
       for(int iChip = 0; iChip < NCHIP; iChip++) {
+	if(rawEvent.chipid[iSlab][iChip] == -1) continue;
 	for(int iMem = 0; iMem < MEMDEPTH; iMem++){
-	  if(rawEvent.corrected_bcid[iSlab][iChip][iMem] < noisy_acquisition_start || rawEvent.badbcid[iSlab][iChip][iMem] != 0) continue;
+	  //if(rawEvent.corrected_bcid[iSlab][iChip][iMem] < noisy_acquisition_start || rawEvent.badbcid[iSlab][iChip][iMem] != 0) continue;
+	  if(rawEvent.badbcid[iSlab][iChip][iMem] != 0) continue;
+	  
 	  for(int iChan = 0; iChan < NCHANNELS; iChan++) {
-	    if(rawEvent.gain_hit_high[iSlab][iChip][iMem][iChan] < 0) continue;
-	    if((*maskedMap)[iSlab][iChip][iChan]) continue;
-	    
-	    float hg;
-	    
-	    if((*pedestalsMap)[iSlab][iChip][iMem][iChan].pedestal > pedestal_min_value) {
-	      hg = (float)rawEvent.highGain[iSlab][iChip][iMem][iChan] - (*pedestalsMap)[iSlab][iChip][iMem][iChan].pedestal;
-	    }
-	    else {
-	      int nValidScas;
-	      float meanPedestal = 0.;
-	      for(int iSca = 0; iSca < 15; iSca++) {
-		if((*pedestalsMap)[iSlab][iChip][iSca][iChan].pedestal < pedestal_min_average) continue;
-		meanPedestal += (*pedestalsMap)[iSlab][iChip][iSca][iChan].pedestal;
-		nValidScas++;
-	      }
+        
+	    if(rawEvent.gain_hit_high[iSlab][iChip][iMem][iChan] <= 0) continue;
 
-	      meanPedestal /= nValidScas;
-	      if(nValidScas < pedestal_min_scas) continue;
-	      hg = (float)rawEvent.highGain[iSlab][iChip][iMem][iChan] - meanPedestal;
+            if((*maskedMap)[iSlab][iChip][iChan]) continue;
+	    
+	    if(_debug) std::cout << "Pedestal: " << (*pedestalsMap)[iSlab][iChip][iMem][iChan].pedestal << std::endl;
+	    float hg =  (float)rawEvent.highGain[iSlab][iChip][iMem][iChan] - (*pedestalsMap)[iSlab][iChip][iMem][iChan].pedestal;
+
+	    if(_debug) std::cout << "MIP Calibration: " << (*calibrationMap)[iSlab][iChip][iChan].mpv << std::endl;	    
+	    if((*calibrationMap)[iSlab][iChip][iChan].mpv < mip_cutoff || (*calibrationMap)[iSlab][iChip][iChan].empv < 0) continue;
+
+	    if(!tools->readoutDone) {
+	      tools->histograms1D.at("Readout")->Fill(rawEvent.bcid[iSlab][iChip][iMem]);
+	      tools->histograms1D.at("CorrectedReadout")->Fill(rawEvent.corrected_bcid[iSlab][iChip][iMem]);
 	    }
 
-	    if((*calibrationMap)[iSlab][iChip][iChan].mpv < mip_cutoff) continue;
-
+	    if(_debug) std::cout << "Creating new ECal hit" << std::endl;	    
+        
 	    ECalHit newHit;
 	    newHit.energy = hg/(*calibrationMap)[iSlab][iChip][iChan].mpv;
 
+	    
 	    newHit.position[0] = (*mapping)[iChip].chanMapping[iChan].first;
 	    newHit.position[1] = (*mapping)[iChip].chanMapping[iChan].second;
 	    newHit.position[2] = iSlab*15;
@@ -240,16 +257,28 @@ void EventBuilder::BuildEvents() {
 	    if(newHit.position[1] < 0) newHit.J = (int)((newHit.position[1] + 91.7)/5.5);
 	    else newHit.J = (int)(newHit.position[1]/5.5) + 16;
 	    newHit.K = iSlab;
-	    newHit.SLB = iSlab;
 	    newHit.CHP = iChip;
 	    newHit.CHN = iChan;
 	    newHit.SCA = iMem;
+	    //newHit.prevBCID = prevBCID;
+	    //if(prevBCID > rawEvent.bcid[iSlab][iChip][iMem]) newHit.needsBCIDCorrection = true;
 
+	    tools->histograms1D.at("CorrectedBCID")->Fill(rawEvent.corrected_bcid[iSlab][iChip][iMem]);
+	    
 	    bcidMap[rawEvent.corrected_bcid[iSlab][iChip][iMem]].push_back(newHit);
-	  }
-	}
-      }
-    }
+	    
+	  } // End of Channel loop
+
+	  nHitsReadout++;
+	  //prevBCID = rawEvent.bcid[iSlab][iChip][iMem];
+	} // End of Sca loop
+      } // End of Chip loop
+    } // End of Layer loop
+
+    tools->readoutDone = true;
+    tools->histograms1D.at("NHitsReadout")->Fill(nHitsReadout);
+
+    if(_debug) std::cout << "Starting BCID Merging" << std::endl;	    
     
     auto bcidIt = bcidMap.begin();
     while(bcidIt != bcidMap.end()) {
@@ -278,19 +307,25 @@ void EventBuilder::BuildEvents() {
       LCCollectionVec* outCol = new LCCollectionVec(LCIO::CALORIMETERHIT);
       outCol->setFlag(0|(1 << LCIO::RCHBIT_LONG));
 
-      CellIDEncoder<CalorimeterHitImpl> cd("SLB:4,CHP:4,CHN:6,SCA:4,I:5,J:5,K:4",outCol);
+      CellIDEncoder<CalorimeterHitImpl> cd("I:5,J:5,K:4,CHP:4,CHN:6,SCA:4,",outCol);
+      
+      std::map<int,std::map<int,int>> hitMap = {};
+      
+      float sumEnergy = 0.;
 
       int nHits = 0;
-      float sumEnergy = 0.;
-      
       while(bcidIt != scanIt) {
 	for(auto hitIt = bcidIt->second.begin(); hitIt != bcidIt->second.end(); hitIt++) {
+
+	  if(_debug) std::cout << "Creating new CalorimeterHit" << std::endl; 
+
 	  CalorimeterHitImpl* lcioHit = new CalorimeterHitImpl();
 	  lcioHit->setEnergy(hitIt->energy);
+	  sumEnergy += hitIt->energy;
+
 	  lcioHit->setPosition(hitIt->position);
 	  lcioHit->setTime(bcidIt->first);
 
-	  cd["SLB"] = hitIt->SLB;
 	  cd["CHP"] = hitIt->CHP;
 	  cd["CHN"] = hitIt->CHN;
 	  cd["SCA"] = hitIt->SCA;
@@ -299,15 +334,49 @@ void EventBuilder::BuildEvents() {
 	  cd["K"] = hitIt->K;
 	  cd.setCellID(lcioHit);
 
+	  hitMap[hitIt->K][hitIt->CHP]++;
+	  outCol->addElement(lcioHit);
 	  nHits++;
-	  sumEnergy += hitIt->energy;
 	  
-	  outCol->addElement(lcioHit); 
+	  tools->histograms1D.at("I")->Fill(hitIt->I);
+	  tools->histograms1D.at("J")->Fill(hitIt->J);
+	  tools->histograms1D.at("K")->Fill(hitIt->K);
+
+	  /*if(layers.find(hitIt->K) == layers.end()) {
+	    if(_debug) std::cout << "Found new layer: " << hitIt->K << std::endl; 
+	    nLayers++;
+	    nChips++;
+	  }
+	  else if(chips.at(hitIt->K).find(hitIt->CHP) == chips.at(hitIt->K).end()) {
+	    if(_debug) std::cout << "Found new Chip: " << hitIt->CHP << std::endl;
+	    nChips++;
+	    nScas++;
+	    }*/
+
 	}
 	bcidIt++;
-      }
+      } // End of scan loop
+      
+      int nLayers, nChips;
+      nLayers = nChips = 0;
 
-      outCol->parameters().setValue("NHits", nHits);
+      for(auto layerIt = hitMap.begin(); layerIt != hitMap.end(); layerIt++) {
+	int nHitsInLayer = 0;
+	for(auto chipIt = layerIt->second.begin(); chipIt != layerIt->second.end(); chipIt++) {
+	  tools->histograms1D.at("NHitsChip")->Fill(chipIt->second);
+	  nHitsInLayer += chipIt->second;
+	  nChips++;
+	}
+	tools->histograms1D.at("NHitsLayer")->Fill(nHitsInLayer);
+	nLayers++;
+      }
+      
+      tools->histograms1D.at("NHits")->Fill(nHits);
+      tools->histograms1D.at("NChips")->Fill(nChips);
+      tools->histograms1D.at("NLayers")->Fill(nLayers);
+      
+      outCol->parameters().setValue("NLayers", nLayers);
+      outCol->parameters().setValue("NChips", nChips);
       outCol->parameters().setValue("SumEnergy", sumEnergy);
 
       evt->addCollection(outCol, _outputColName.c_str());
@@ -315,7 +384,7 @@ void EventBuilder::BuildEvents() {
       delete evt;
 
       evtNr++;
-    }
+    } // End of loop over BICD Map
     
   }
   
@@ -323,9 +392,11 @@ void EventBuilder::BuildEvents() {
 
 
 void EventBuilder::End() {
-
+  
   //Closing files and freeing memory
 
+  delete tools;
+  
   if(mapping != nullptr) delete mapping;
   if(cobMapping != nullptr) delete cobMapping;
   if(ecalConfig != nullptr) delete ecalConfig;

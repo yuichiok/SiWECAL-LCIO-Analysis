@@ -19,18 +19,18 @@ error_t parse_opt(int key, char *arg, struct argp_state *state) {
   switch(key) {
   case 'n':
     builder->_maxEntries = std::stoi(arg); break;
-  case 'w':
-    builder->_wConfig = std::stoi(arg); break;
   case 'i':
     builder->_inputFileName = arg; break;
   case 't':
     builder->_inputTreeName = arg; break;
   case 'o':
     builder->_outputFileName = arg; break;
-  case 'd':
-    builder->_debug = arg; break;
   case 'c':
     builder->_commissioningFolder = arg; break;
+  case 'm':
+    builder->_excMode = arg; break;
+  case 'r':
+    builder->_runNumber = std::stoi(arg); break;
   case 999:
     builder->_outputColName = arg; break;
   case 1000:
@@ -60,13 +60,13 @@ int main(int argc , char** argv)
   
   struct argp_option options[] = {
 				  {"max_entries", 'n', "MAXENTRIES", 0, "Number of entries to process from the input file"},
-				  {"w_config", 'w', "WCONFIG", 0, "WTF IS THIS"},
 				  {"in_file_name", 'i', "INFILENAME", 0, "Input file name"},
 				  {"in_tree_name", 't', "INTREENAME", 0, "Input TTree name"},
 				  {"out_file_name", 'o', "OUTFILENAME", 0, "Output file name"},
-				  {"debug_mode", 'd', "DEBUGMODE", 0, "Print debug variables"},
-				  {"out_col_name", 999, "OUTCOLNAME", 0, "Output collection name"},
+		        	  {"out_col_name", 999, "OUTCOLNAME", 0, "Output collection name"},
 				  {"comissioning_folder", 'c', "COMFOLDER", 0, "Path to the comissioning folder"},
+				  {"exc_mode", 'm', "EXCMODE", 0, "Execution mode of this program: default -> executes with minimal output ; debug -> executes with all output ; setup -> only reads and prints all the input files "},
+				  {"run_number", 'r', "RUNNUMBER", 0, "Run number. By default -1"},				   
 				  {"configuration_file", 1000, "CONFIG", 0, "Layer configuration of the calorimeter"},
 				  {"mapping_file", 1001, "MAPFILE", 0, "Mapping file name"},
 				  {"mapping_file_cob", 1002, "MAPFILECOB", 0, "Mapping file name for the cob layers"},
@@ -83,7 +83,7 @@ int main(int argc , char** argv)
 
   argp_parse(&argumentsParser, argc, argv, 0, 0, (void*)builder);
 
-  if(builder->_inputFileName == "") {
+  if(builder->_inputFileName == "" && builder->_excMode != "setup") {
     std::cout << "The INPUTFILENAME must be specified" << std::endl;
     return 0;
   }
@@ -92,7 +92,6 @@ int main(int argc , char** argv)
   std::cout << "Event Builder: RawToLCIO " << argp_program_version << std::endl;
   
   std::cout << "\t MaxEntries: " << builder->_maxEntries << std::endl;
-  std::cout << "\t WConfig: " << builder->_wConfig << std::endl;
   std::cout << "\t InputFileName: " << builder->_inputFileName << std::endl;
   std::cout << "\t InputTreeName: " << builder->_inputTreeName << std::endl;
   std::cout << "\t OutputFileName: " << builder->_outputFileName << std::endl;
@@ -104,6 +103,8 @@ int main(int argc , char** argv)
   std::cout << "\t MipCalibrationFile: " << builder->_mipCalibrationFile << std::endl;
   std::cout << "\t MaskedFile: " << builder->_maskedFile << std::endl;  
   std::cout << "\t Commissioning folder: " << builder->_commissioningFolder << std::endl; 
+  std::cout << "\t Run number: " << builder->_runNumber << std::endl; 
+  std::cout << "\t Execution mode: " << builder->_excMode << std::endl; 
 
   std::cout << "###########################" << std::endl;
   

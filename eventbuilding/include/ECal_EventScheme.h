@@ -8,6 +8,7 @@
 #define NCHIP 16
 #define MEMDEPTH 15
 #define NCHANNELS 64
+#define NSCA 15
 
 struct RawECALEvent {
 

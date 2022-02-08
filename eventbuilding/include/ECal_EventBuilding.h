@@ -19,7 +19,8 @@ struct ECalHit {
 
   float energy;
   float position[3];
-  int I,J,K,SLB,CHP,CHN,SCA;
+  int I,J,K,CHP,CHN,SCA;
+  //int prevBCID;
   
 };
 
@@ -31,9 +32,10 @@ public:
   ~EventBuilder() {};
     
   Long64_t _maxEntries = -1;
-  int _wConfig = -1;
+  int _runNumber = -1;
   bool _debug = false;
-
+  bool _setup = false;
+  
   void Check();
   bool Init();
   void Mapping() {};
@@ -51,7 +53,8 @@ public:
   std::string _mipCalibrationFile;
   std::string _maskedFile;
   std::string _commissioningFolder;
-
+  std::string _excMode;
+  
 private:
 
   // I/O variables
@@ -62,7 +65,7 @@ private:
 
   lcio::LCWriter* outputWriter = nullptr;
 
-  ECalTools tools;
+  ECalTools* tools;
   std::map<int, Chip>* mapping;
   std::map<int, Chip>* cobMapping;
   std::map<int,Slot>* ecalConfig;
@@ -71,14 +74,16 @@ private:
   std::map<int,std::map<int,std::map<int,bool>>>* maskedMap;  
 
   // Header variables that will be saved in the LCIO file
-  int runNumber = -1;
   std::string detectorName = "ECAL_15Slabs_2021";
-  
-  // Event variables that will be saved in the LCIO file
+ 
+  // Counters
 
-  //Program options defaults and constants
+  int evtNr, readoutNr;
+  //long int nHitsInBinSplitted, nHitsInBinSplitted_WCorrection;
+  
+  // Program options defaults and constants
   const std::string _inputTreeNameDefault = "siwecaldecoded";
-  const std::string _outputFileNameDefault = "SiWEcal_TB2021";
+  const std::string _outputFileNameDefault = "SiWEcal_TB2021_";
   const std::string _outputColNameDefault = "ECalEvents";
   const std::string _configFileDefault = "config/ecalConfiguration_Nov2021.txt";
   const std::string _mappingFileDefault = "mapping/fev10_chip_channel_x_y_mapping.txt";
@@ -88,7 +93,7 @@ private:
   const std::string _maskedFileDefault = "masked/masked_PROTO15_dummy.txt";
   const std::string _commissioningFolderDefault = "";
   
-  const int noisy_acquisition_start = 50;
+  //const int noisy_acquisition_start = 50;
   const int bcid_merge_delta = 3;
   const int bcid_too_many_hits = 8000;
   
@@ -97,7 +102,7 @@ private:
   const int pedestal_min_value = 10;
 
   const float mip_cutoff = 0.5;
-
+  
 };
 
 #endif

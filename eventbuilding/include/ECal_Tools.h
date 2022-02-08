@@ -6,6 +6,9 @@
 #include <vector>
 #include <map>
 
+#include "TFile.h"
+#include "TH1F.h"
+
 struct Slot{
 
   int layer, slab, slabID, slabAdd;
@@ -25,7 +28,7 @@ struct Chip{
 
 struct Sca{
   
-  float pedestal, error, width;
+  float pedestal, error, noiseCoherent, noiseIncoherent1, noiseIncoherent2;
 
 };
 
@@ -40,9 +43,12 @@ class ECalTools {
 
 public:
   
-  ECalTools() {};
-  ~ECalTools() {};
+  ECalTools(bool createLogFile = false, std::string logFileName = "LogROOT_ECalEventBuilding.root", bool debug = false);
+  ~ECalTools();
 
+  bool hasLogFile;
+  bool debugMode = false;
+  
   // --- Tools to read the different files
   std::map<int,Slot>* ReadConfigFile(std::string configFileName);
   std::map<int,Chip>* ReadMappingFile(std::string mapFileName);
@@ -56,6 +62,15 @@ public:
   void DisplayPedestals(std::map<int,std::map<int,std::map<int,std::vector<Sca>>>>* pedestals);
   void DisplayCalibration(std::map<int,std::map<int,std::map<int,Chan>>>* calibration);
   void DisplayMasked(std::map<int,std::map<int, std::map<int,bool>>>* masked);
+
+  // Log file and histograms
+
+  void InitFileAndHistograms(std::string logFileName);
+  void WriteAndClose();
+  
+  TFile* logFile;
+  std::map<std::string,TH1F*> histograms1D = {};
+  bool readoutDone = false;
   
 };
 
