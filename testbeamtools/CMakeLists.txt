@@ -14,7 +14,7 @@ find_package(LCIO)
 find_package(ROOT)
 
 # build the executable and put it into bin/
-add_executable(lcio_draw_event lcio_draw_event.cc)
-#target_include_directories(lcio_draw_event ${LCIO_INCLUDE_DIRS})
-target_link_libraries(lcio_draw_event ${LCIO_LIBRARIES} ${ROOT_LIBRARIES} ROOT::Core ROOT::RIO ROOT::Tree ROOT::Physics  ROOT::GenVector ROOT::MathCore)
-install(TARGETS lcio_draw_event DESTINATION bin)
+add_executable(lcio_bcid_correlations lcio_bcid_correlations.cc)
+#target_include_directories(lcio_bcid_correlations ${LCIO_INCLUDE_DIRS})
+target_link_libraries(lcio_bcid_correlations ${LCIO_LIBRARIES} ${ROOT_LIBRARIES} ROOT::Core ROOT::RIO ROOT::Tree ROOT::Physics  ROOT::GenVector ROOT::MathCore)
+install(TARGETS lcio_bcid_correlations DESTINATION bin)

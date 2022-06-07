@@ -1,0 +1,13 @@
+## A. Irles
+## 2022/06
+## Tool to read LCIO files with SiWECAL+AHCAL ROC events (readout-cycles) recorded by EUDAQ and check visually the bcid correlation
+
+#Compile:
+mkdir build
+cd build
+cmake ..
+make install
+cd ..
+
+#Run
+./bin/lcio_bcid_correlations LCIO_FILE reference_layer_number
