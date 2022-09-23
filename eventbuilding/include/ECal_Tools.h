@@ -8,11 +8,12 @@
 
 #include "TFile.h"
 #include "TH1F.h"
+#include "TH2F.h"
 
 struct Slot{
 
   int layer, slab, slabID, slabAdd;
-  float W, X0, X0Acc;
+  float W, X0, X0Acc, deltaX;
   std::string glissiere, ASU, wafer;
   
 };
@@ -20,15 +21,14 @@ struct Slot{
 
 struct Chip{
 
-  float X0, Y0;
-  std::map<int, std::pair<float, float>> chanMapping = {};
+  std::map<int, std::pair<int, int>> chanMapping = {};
 
 };
 
 
 struct Sca{
   
-  float pedestal, error, noiseCoherent, noiseIncoherent1, noiseIncoherent2;
+  float pedestal, error, noiseInCoherent, noiseCoherent1, noiseCoherent2;
 
 };
 
@@ -70,6 +70,7 @@ public:
   
   TFile* logFile;
   std::map<std::string,TH1F*> histograms1D = {};
+  std::map<std::string,TH2F*> histograms2D = {};
   bool readoutDone = false;
   
 };

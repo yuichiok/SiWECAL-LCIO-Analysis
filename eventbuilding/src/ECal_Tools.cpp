@@ -27,26 +27,40 @@ std::map<int,Slot>* ECalTools::ReadConfigFile(std::string configFileName) {
 
   std::ifstream file(configFileName);
   if(!file) return nullptr;
+
+  int readMode = 0; // 0 = November 2022 - 1 = March 20222
+  if(configFileName.find("March") != std::string::npos) readMode = 1;
   
   std::map<int, Slot>* outMap = new std::map<int, Slot>();
 
   int tmp_slot, tmp_layer, tmp_slab, tmp_slabID, tmp_slabAdd;
-  float tmp_W, tmp_X0, tmp_X0Acc;
+  tmp_slot = tmp_layer = tmp_slab = tmp_slabID = tmp_slabAdd = -1;
+  
+  float tmp_W, tmp_X0, tmp_X0Acc, tmp_deltaX;
+  tmp_W = tmp_X0 = tmp_X0Acc = tmp_deltaX = 0.f;
+  
   std::string tmp_gliss, tmp_ASU, tmp_wafer, tmp_header;
-
+  tmp_gliss = tmp_ASU = tmp_wafer = tmp_header = "";
+  
   std::getline(file, tmp_header);
   while(file) {
-    file >> tmp_slot >> tmp_layer >> tmp_slab >> tmp_slabID >> tmp_slabAdd >> tmp_ASU >> tmp_wafer >> tmp_gliss >> tmp_W >> tmp_X0 >> tmp_X0Acc;
-    (*outMap)[tmp_slot].layer = tmp_layer;
-    (*outMap)[tmp_slot].slab = tmp_slab;
-    (*outMap)[tmp_slot].slabID = tmp_slabID;
-    (*outMap)[tmp_slot].slabAdd = tmp_slabAdd;
-    (*outMap)[tmp_slot].glissiere = tmp_gliss;
-    (*outMap)[tmp_slot].W = tmp_W;
-    (*outMap)[tmp_slot].X0 = tmp_X0;
-    (*outMap)[tmp_slot].X0Acc = tmp_X0Acc;
-    (*outMap)[tmp_slot].ASU = tmp_ASU;
-    (*outMap)[tmp_slot].wafer = tmp_wafer;
+    switch(readMode) {
+    case 0:
+      file >> tmp_slot >> tmp_layer >> tmp_slab >> tmp_slabID >> tmp_slabAdd >> tmp_ASU >> tmp_wafer >> tmp_gliss >> tmp_W >> tmp_X0 >> tmp_X0Acc; break;
+    case 1:
+      file >> tmp_slot >> tmp_layer >> tmp_slab >> tmp_slabID >> tmp_slabAdd >> tmp_ASU >> tmp_wafer >> tmp_W >> tmp_deltaX; break;
+    }
+    (*outMap)[tmp_layer].layer = tmp_layer;
+    (*outMap)[tmp_layer].slab = tmp_slab;
+    (*outMap)[tmp_layer].slabID = tmp_slabID;
+    (*outMap)[tmp_layer].slabAdd = tmp_slabAdd;
+    (*outMap)[tmp_layer].glissiere = tmp_gliss;
+    (*outMap)[tmp_layer].W = tmp_W;
+    (*outMap)[tmp_layer].X0 = tmp_X0;
+    (*outMap)[tmp_layer].X0Acc = tmp_X0Acc;
+    (*outMap)[tmp_layer].deltaX = tmp_deltaX;
+    (*outMap)[tmp_layer].ASU = tmp_ASU;
+    (*outMap)[tmp_layer].wafer = tmp_wafer;
   }
 
   return outMap;
@@ -59,19 +73,16 @@ std::map<int,Chip>* ECalTools::ReadMappingFile(std::string mapFileName) {
 
   std::map<int, Chip>* outMap = new std::map<int, Chip>();
 
-  int tmp_chip, tmp_chan;
-  float tmp_x0, tmp_y0, tmp_x, tmp_y;
+  int tmp_chip, tmp_chan, tmp_I, tmp_J;
   std::string tmp_header;
 
-  std::getline(file, tmp_header);
+  std::getline(file, tmp_header); // ### IJMapping
+  std::getline(file, tmp_header); // ## TYPE: fevX FLIPX: FLIPY:
+  std::getline(file, tmp_header); // # chip channel I J
   while(file) {
-    file >> tmp_chip >> tmp_x0 >> tmp_y0 >> tmp_chan >> tmp_x >> tmp_y;
-    if(tmp_chan == 0) {
-      (*outMap)[tmp_chip].X0 = tmp_x0;
-      (*outMap)[tmp_chip].Y0 = tmp_y0;
-    }
-    (*outMap)[tmp_chip].chanMapping[tmp_chan].first = tmp_x;
-    (*outMap)[tmp_chip].chanMapping[tmp_chan].second = tmp_y;
+    file >> tmp_chip >> tmp_chan >> tmp_I >> tmp_J;
+    (*outMap)[tmp_chip].chanMapping[tmp_chan].first = tmp_I;
+    (*outMap)[tmp_chip].chanMapping[tmp_chan].second = tmp_J;
   }
 
   return outMap;
@@ -86,7 +97,7 @@ std::map<int,std::map<int,std::map<int,std::vector<Sca>>>>* ECalTools::ReadPedes
   std::map<int,std::map<int,std::map<int,std::vector<Sca>>>>* outMap = new std::map<int,std::map<int,std::map<int,std::vector<Sca>>>>();
 
   int tmp_layer, tmp_chip, tmp_chan;
-  float tmp_ped, tmp_err, tmp_coherent, tmp_incoherent1, tmp_incoherent2;
+  float tmp_ped, tmp_err, tmp_incoherent, tmp_coherent1, tmp_coherent2;
   std::string tmp_header;
 
   std::getline(file, tmp_header);
@@ -96,16 +107,14 @@ std::map<int,std::map<int,std::map<int,std::vector<Sca>>>>* ECalTools::ReadPedes
     file >> tmp_layer >> tmp_chip >> tmp_chan;
     for(int iSca = 0; iSca < 15; iSca++) {
 
-      file >> tmp_ped >> tmp_err;
-      if(tmp_err > - 8 && tmp_err < 0) file >> tmp_coherent >> tmp_incoherent1;
-      else file >> tmp_coherent >> tmp_incoherent1 >> tmp_incoherent2;
+      file >> tmp_ped >> tmp_err >> tmp_incoherent >> tmp_coherent1 >> tmp_coherent2;
       
       Sca newSca;
       newSca.pedestal = tmp_ped;
       newSca.error = tmp_err;
-      newSca.noiseCoherent = tmp_coherent;
-      newSca.noiseIncoherent1 = tmp_incoherent1;
-      newSca.noiseIncoherent2 = tmp_incoherent2;
+      newSca.noiseInCoherent = tmp_incoherent;
+      newSca.noiseCoherent1 = tmp_coherent1;
+      newSca.noiseCoherent2 = tmp_coherent2;
       (*outMap)[tmp_layer][tmp_chip][tmp_chan].push_back(newSca);
     }
   }
@@ -185,9 +194,9 @@ void ECalTools::DisplayMapping(std::map<int,Chip>* mapping) {
 
   for(auto chipIt = mapping->begin(); chipIt != mapping->end(); chipIt++) {
 
-    std::cout << " ### --- Chip: " << chipIt->first << ". X0 = " << chipIt->second.X0 << " Y0 = " << chipIt->second.Y0 << std::endl;
+    std::cout << " ### --- Chip: " << chipIt->first << std::endl;
     for(auto chanIt = chipIt->second.chanMapping.begin(); chanIt != chipIt->second.chanMapping.end(); chanIt++) {
-      std::cout << "| Channel " << chanIt->first << ". X = " << chanIt->second.first << " Y = " << chanIt->second.second << " |"; 
+      std::cout << "\t | Channel " << chanIt->first << ". I = " << chanIt->second.first << " J = " << chanIt->second.second << " |"; 
     }
     std::cout << std::endl;
   }
@@ -210,7 +219,7 @@ void ECalTools::DisplayPedestals(std::map<int,std::map<int,std::map<int,std::vec
 	std::cout << "Layer = " << layerIt->first << " Chip = " << chipIt->first << " Channel = " << chanIt->first << " - ";
 	for(int iSca = 0; iSca < 15; iSca++) {
 	  Sca currSca = chanIt->second.at(iSca);
-	  std::cout << "SCA" << iSca << " = " << currSca.pedestal << " " << currSca.error << " " << currSca.noiseCoherent << " " << currSca.noiseIncoherent1 << " " << currSca.noiseIncoherent2 << " - ";  
+	  std::cout << "SCA" << iSca << " = " << currSca.pedestal << " " << currSca.error << " " << currSca.noiseInCoherent << " " << currSca.noiseCoherent1 << " " << currSca.noiseCoherent2 << " - ";  
 	}
 	std::cout << std::endl;
       }
@@ -252,7 +261,11 @@ void ECalTools::InitFileAndHistograms(std::string logFileName) {
   
   logFile = new TFile(logFileName.c_str(), "RECREATE");
 
-  histograms1D["CorrectedBCID"] = new TH1F("CorrectedBCID", "Corrected BCID;BCID;Entries", 10000, 0., 10000.);
+  histograms1D["BCID"] = new TH1F("BCID", "BCID;BCID;Entries", 20000, 0., 20000.);
+  histograms1D["CorrectedBCID"] = new TH1F("CorrectedBCID", "Corrected BCID;BCID;Entries", 20000, 0., 20000.);
+  histograms1D["OverrunGap"] = new TH1F("OverrunGap", "Overrun Gap;BCID;Entries", 20000, 0., 20000.);
+
+  
   histograms1D["Readout"] = new TH1F("Readout", "Readout No-Correction;BCID;Entries", 5000, 0., 5000.);
   histograms1D["CorrectedReadout"] = new TH1F("CorrectedReadout", "Readout Corrected;BCID;Entries", 5000, 0., 5000.);
   histograms1D["NHitsReadout"] = new TH1F("NHitsReadout", "NHits Per Readout;NHits;Entries", 10000, 0., 10000.);
@@ -269,6 +282,19 @@ void ECalTools::InitFileAndHistograms(std::string logFileName) {
   histograms1D["J"] = new TH1F("J", "J;J(Pad);Entries", 35, 0., 35.);
   histograms1D["K"] = new TH1F("K", "K;K(Pad);Entries", 20, 0., 20.);
 
+  histograms1D["NMerges"] = new TH1F("NMerges", "NMerges;N_{Merges};Entries", 20, 0., 20.);
+  
+  histograms1D["Merged_I"] = new TH1F("Merged_I", "MergedI;I(Pad);Entries", 35, 0., 35.);
+  histograms1D["Merged_J"] = new TH1F("Merged_J", "MergedJ;J(Pad);Entries", 35, 0., 35.);
+  histograms1D["Merged_K"] = new TH1F("Merged_K", "MergedK;K(Pad);Entries", 20, 0., 20.);
+  histograms1D["Merged_DeltaBCID"] = new TH1F("Merged_DeltaBCID", "DeltaBCID;#Delta BCID;Entries", 100, -50., 50.);
+  
+  histograms1D["HitEnergy"] = new TH1F("HitEnergy", "Energy of the hits;E_{Hit};Entries", 3000, 0., 300.);
+  histograms1D["SumEnergy"] = new TH1F("SumEnergy", "Energy of the event;E_{Sum};Entries", 3000, 0., 300.);
+
+  histograms2D["MergedEA_EB"] = new TH2F("EA_EB", "Energy of merged hits;Energy A;Energy B", 3000, 0., 300., 3000, 0., 300.);
+  
+
 }
 
 
@@ -283,8 +309,14 @@ void ECalTools::WriteAndClose() {
     delete It1D->second;
   }
 
-  histograms1D.clear();
 
+  for(auto It2D = histograms2D.begin(); It2D != histograms2D.end(); It2D++) {
+    It2D->second->Write();
+    delete It2D->second;
+  }
+  
+  histograms1D.clear();
+  histograms2D.clear();
   
   logFile->Close();
   delete logFile;
