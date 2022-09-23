@@ -1,4 +1,4 @@
-#Process to compile and run the ROOT to LCiO converter
+# Process to compile and run the ROOT to LCiO converter
 
 First source ilcsoft
 Then run in the eventbuilding folder ./script/build Full
