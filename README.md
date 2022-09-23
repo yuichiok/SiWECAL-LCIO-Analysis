@@ -1,4 +1,8 @@
-# Process to compile and run the ROOT to LCiO converter
+# SiWECal: Binary to ROOT and event builder into LCIO
+
+## Setup
+
+First *source eventbuilding/script/initWorkEnv.sh* 
 
 First source ilcsoft
 Then run in the eventbuilding folder ./script/build Full
