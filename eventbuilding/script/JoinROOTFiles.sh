@@ -8,7 +8,7 @@ fi
 commonFolder=${1}
 baseName=${2}
 
-for run in ${commonFolder}/${baseName}*; do
+for run in ${commonFolder}/*bin_*.root; do
 
     runNumber=$( echo ${run#*"run_"} | cut -d '_' -f 1 ) 
     

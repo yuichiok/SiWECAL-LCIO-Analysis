@@ -1,0 +1,48 @@
+<marlin>
+
+  <constants>
+    <include ref="DataInfo.xml"/>
+  </constants>
+  
+  <execute>
+    <processor name="MyCleanupAndBeamSelector"/>
+  </execute>
+  
+  <global>
+    <!--Modify this parameter to be the path of the file to proccess. DataInfo.xml contains the files from the different angles grouped in variables.-->
+    <parameter name="LCIOInputFiles">
+      ${RawData_MIPScan}
+    </parameter>
+    <parameter name="Verbosity" value="MESSAGE"/>
+    <parameter name="MaxRecordNumber" value="0"/>
+    <parameter name="SupressCheck" value="false"/>
+  </global>
+  
+
+  <processor name="MyCleanupAndBeamSelector" type="CleanupAndBeamSelector">
+    <parameter name="ECALCollections" type="StringVec">ECalEvents</parameter>
+    <parameter name="LCIOOutputFile" type="string">TB_ECALBeamEvents_</parameter>
+    <parameter name="OutputCollectionName" type="string">ECAL_BeamEvents</parameter>
+    <parameter name="logRoot_Name" type="string">TB_ROOT_CleanAndBeam</parameter>    
+    <parameter name="NoisyChipCut" type="int">10</parameter>
+
+    <!-- Cuts in the beginning of the detector scan -->
+    <parameter name="LastScanLayer" type="int">15</parameter>
+    <parameter name="NLayersScanCut" type="int">12</parameter>
+
+  </processor>
+
+</marlin>
+
+
+
+
+
+
+
+
+
+
+
+
+

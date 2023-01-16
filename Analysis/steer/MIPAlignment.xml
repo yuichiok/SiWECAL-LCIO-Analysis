@@ -1,0 +1,30 @@
+<marlin>
+
+  <constants>
+    <include ref="DataInfo.xml"/>
+  </constants>
+  
+  <execute>
+    <processor name="MyMIPAlignment"/>
+  </execute>
+
+  <global>
+    <parameter name="LCIOInputFiles">
+      TB_ECALMIPEvents_50479.slcio
+      TB_ECALMIPEvents_50480.slcio
+      TB_ECALMIPEvents_50472.slcio
+      TB_ECALMIPEvents_50473.slcio
+    </parameter>
+    <parameter name="Verbosity" value="MESSAGE"/>
+    <parameter name="MaxRecordNumber" value="0"/>
+    <parameter name="SupressCheck" value="true"/>
+  </global>
+
+  <processor name="MyMIPAlignment" type="MIPAlignmentProc">
+    <!-- HitCollections. TestBeam: TB_ECAL_MIPEvents MC: MCProtoEvent -->
+    <parameter name="ECALCollections" type="StringVec">TB_ECAL_MIPEvents</parameter>
+    <parameter name="logRoot_Name" type="string">TB_ROOT_MIPAlignment</parameter>
+  </processor>
+
+</marlin>
+

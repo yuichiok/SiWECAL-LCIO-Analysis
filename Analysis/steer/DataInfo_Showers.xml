@@ -1,0 +1,26 @@
+<constant name="DataFolder" value="/home/hecgc/Physics/Repos/SiWECAL-LCIO-Analysis/Data/Showers"/>
+<constant name="AnalysisFolder" value="/home/hecgc/Physics/Repos/SiWECAL-LCIO-Analysis/Analysis"/>
+<constant name="Additional" value="."/>
+
+<!-- Data samples -->
+
+<!-- ##### MIP Scan ##### -->
+
+<constant name="RunNumbers_Showers" type="string">
+  050294
+  050282
+  050261
+</constant>
+
+<constant name="RawData_Showers" type="string">
+  ${DataFolder}/1.0GeV_Showers_Run_50294.slcio
+  ${DataFolder}/3.0GeV_Showers_Run_50282.slcio
+  ${DataFolder}/6.0GeV_Showers_Run_50261.slcio
+</constant>
+
+<constant name="ShowerEvents" type="string">
+  ${AnalysisFolder}/Results/TB/Showers/TB_ECALShowerEvents_50294.slcio
+  ${AnalysisFolder}/Results/TB/Showers/TB_ECALShowerEvents_50282.slcio
+  ${AnalysisFolder}/Results/TB/Showers/TB_ECALShowerEvents_50261.slcio
+</constant>
+
