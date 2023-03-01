@@ -63,7 +63,7 @@ int main(int argc , char** argv)
 				  {"in_file_name", 'i', "INFILENAME", 0, "Input file name"},
 				  {"in_tree_name", 't', "INTREENAME", 0, "Input TTree name"},
 				  {"out_file_name", 'o', "OUTFILENAME", 0, "Output file name"},
-		        	  {"out_col_name", 999, "OUTCOLNAME", 0, "Output collection name"},
+		      {"out_col_name", 999, "OUTCOLNAME", 0, "Output collection name"},
 				  {"comissioning_folder", 'c', "COMFOLDER", 0, "Path to the comissioning folder"},
 				  {"exc_mode", 'm', "EXCMODE", 0, "Execution mode of this program: default -> executes with minimal output ; debug -> executes with all output ; setup -> only reads and prints all the input files "},
 				  {"run_number", 'r', "RUNNUMBER", 0, "Run number. By default -1"},				   

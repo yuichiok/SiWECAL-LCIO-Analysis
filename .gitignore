@@ -36,4 +36,8 @@
 
 # Build
 build.sh
-eventbuilding/build
+build
+app
+
+# setup
+setup
