@@ -7,7 +7,8 @@ cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 message("CPP Version: " ${CMAKE_CXX_STANDARD})
 
 # set(CMAKE_SKIP_RPATH TRUE)
-set(CMAKE_MACOSX_RPATH 1)
+# set(CMAKE_MACOSX_RPATH 1)
+set(CMAKE_CXX_STANDARD 17)
 
 # project name
 project(ECal_EventBuilding)

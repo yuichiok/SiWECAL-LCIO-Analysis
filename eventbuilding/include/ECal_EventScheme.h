@@ -3,6 +3,7 @@
 
 //#include <vector>
 #include <map>
+#include <string>
 
 #define SLBDEPTH 15
 #define NCHIP 16

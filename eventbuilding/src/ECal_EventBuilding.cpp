@@ -167,7 +167,7 @@ bool EventBuilder::Init() {
   if(!inputTree) {
     std::cout << "TTree with name: " << _inputTreeName << " not found in file: " << _inputFileName << std::endl;
     std::cout << "Found items in file: ";
-    for(TIter keyIt = inputFile->GetListOfKeys()->begin(); keyIt != inputFile->GetListOfKeys()->end(); keyIt.Next() ) { std::cout << (dynamic_cast<TKey*>(*keyIt))->GetName() << " "; } 
+    // for(TIter keyIt = inputFile->GetListOfKeys()->begin(); keyIt != inputFile->GetListOfKeys()->end(); keyIt.Next() ) { std::cout << (dynamic_cast<TKey*>(*keyIt))->GetName() << " "; } 
     std::cout << std::endl;
     return false;
   }

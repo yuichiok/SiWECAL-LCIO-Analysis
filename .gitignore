@@ -41,3 +41,8 @@ app
 
 # setup
 setup
+data
+
+*.root
+CMakeLists.txt
+config/ecalConfiguration_Jun2022.txt
