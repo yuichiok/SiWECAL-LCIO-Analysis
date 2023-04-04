@@ -86,7 +86,8 @@ private:
   int evtNr, readoutNr;
   
   // Program options defaults and constants
-  const std::string _inputTreeNameDefault = "ecal";
+  // const std::string _inputTreeNameDefault = "ecal";
+  const std::string _inputTreeNameDefault = "siwecaldecoded";
   const std::string _outputFileNameDefault = "SiWEcal_TB2022_";
   const std::string _outputColNameDefault = "ECalEvents";
   const std::string _configFileDefault = "config/March2022/ecalConfiguration_March2022_2.txt";
