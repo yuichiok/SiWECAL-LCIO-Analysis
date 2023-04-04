@@ -1,0 +1,77 @@
+<marlin>
+
+  <constants>
+    <include ref="DataInfo_MIPAngle.xml"/>
+  </constants>
+  
+  <execute>
+    <processor name="MyCleanupAndBeamSelector"/>
+    <processor name="MyMIPSelector"/>
+    <processor name="MyMIPAnalysis"/>
+  </execute>
+  
+  <global>
+    <!--Modify this parameter to be the path of the file to proccess. DataInfo.xml contains the files from the different angles grouped in variables.-->
+    <parameter name="LCIOInputFiles">
+      ${RawData_MIPAngle}
+    </parameter>
+    <parameter name="Verbosity" value="MESSAGE"/>
+    <parameter name="MaxRecordNumber" value="0"/>
+    <parameter name="SupressCheck" value="false"/>
+  </global>  
+
+  <processor name="MyCleanupAndBeamSelector" type="CleanupAndBeamSelector">
+    <parameter name="ECALCollections" type="StringVec">ECalEvents</parameter>
+    <parameter name="LCIOOutputFile" type="string">TB_ECALBeamEvents_</parameter>
+    <parameter name="OutputCollectionName" type="string">ECAL_BeamEvents</parameter>
+    <parameter name="logRoot_Name" type="string">TB_ROOT_CleanAndBeam</parameter>    
+    <parameter name="NoisyChipCut" type="int">10</parameter>
+
+    <!-- Cuts in the beginning of the detector scan -->
+    <parameter name="LastScanLayer" type="int">15</parameter>
+    <parameter name="NLayersScanCut" type="int">5</parameter>
+
+  </processor>
+
+  <processor name="MyMIPSelector" type="MIPSelectorProc">
+    <!-- HitCollections. TestBeam: ECAL_BeamEvents -->
+    <parameter name="ECALCollections" type="StringVec">ECAL_BeamEvents</parameter>
+    <parameter name="LCIOOutputFileMIPs" type="string">TB_ECALMIPEvents_</parameter>
+    <parameter name="OutputCollectionNameMIPs" type="string">TB_ECAL_MIPEvents</parameter>
+    <parameter name="LCIOOutputFileShowers" type="string">TB_ECALShowerEvents_</parameter>
+    <parameter name="OutputCollectionNameShowers" type="string">TB_ECAL_ShowerEvents</parameter>
+    <parameter name="logRoot_Name" type="string">TB_ROOT_MIPSelector</parameter>
+
+    <!-- Cuts in the density and second maximum -->
+    <parameter name="DensityCutMIPs" type="float">2.5</parameter>
+    <parameter name="SecondMaxCutMIPs" type="int">5</parameter>
+    
+  </processor>
+
+  <processor name="MyMIPAnalysis" type="MIPAnalysisProc">
+    <!-- HitCollections. TestBeam: SDHCAL_MIPEvents MC: MCProtoEvent -->
+    <parameter name="ECALCollections" type="StringVec">TB_ECAL_MIPEvents</parameter>
+    <parameter name="logRoot_Name" type="string">TB_ROOT_MIPAnalysis</parameter>
+    <parameter name="AlignmentFileName" type="string">MIPAlignment.txt</parameter>
+    <parameter name="AlignmentFileName" type="string">../eventbuilding/DeadCellsMapping.txt</parameter>
+    <parameter name="MIPsPerRun" type="FloatVec">100000000</parameter>
+    <parameter name="ScanWindow" type="Int">3</parameter>
+    <parameter name="KGap" type="Int">15</parameter>
+  </processor>
+
+  
+  
+</marlin>
+
+
+
+
+
+
+
+
+
+
+
+
+

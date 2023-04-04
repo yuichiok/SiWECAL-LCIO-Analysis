@@ -1,0 +1,29 @@
+<marlin>
+
+  <constants>
+    <include ref="DataInfo_Showers.xml"/>
+    <constant name="ScanValue" type="int">3</constant>
+  </constants>
+  
+  <execute>
+    <processor name="MyShowerAnalysis"/>
+  </execute>
+
+  <global>
+    <parameter name="LCIOInputFiles">
+      ${ShowerEvents}
+    </parameter>
+    <parameter name="Energies" type="FloatVec"></parameter>
+    <parameter name="Verbosity" value="MESSAGE"/>
+    <parameter name="MaxRecordNumber" value="0"/>
+    <parameter name="SupressCheck" value="true"/>
+  </global>
+
+  <processor name="MyShowerAnalysis" type="ShowerAnalysisProc">
+    <!-- HitCollections. TestBeam: SDHCAL_MIPEvents MC: MCProtoEvent -->
+    <parameter name="ECALCollections" type="StringVec">TB_ECAL_ShowerEvents</parameter>
+    <parameter name="logRoot_Name" type="string">TB_ROOT_ShowerAnalysis</parameter>
+  </processor>
+
+</marlin>
+

@@ -1,0 +1,14 @@
+<constant name="DataFolder" value="/home/hecgc/Physics/Repos/SiWECAL-LCIO-Analysis/Data/MIPAngle"/>
+<constant name="AnalysisFolder" value="/home/hecgc/Physics/Repos/SiWECAL-LCIO-Analysis/Analysis"/>
+
+<!-- Data samples -->
+
+<!-- ##### MIP Scan ##### -->
+
+<constant name="RunNumbers_MIPAngle" type="string">
+  50519
+</constant>
+
+<constant name="RawData_MIPAngle" type="string">
+  ${DataFolder}/3GeV_60Deg_6pF_MIPAngle_Run_50519.slcio
+</constant>
