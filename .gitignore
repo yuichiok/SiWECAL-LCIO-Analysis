@@ -43,6 +43,9 @@ app
 setup
 data
 
+# output
 *.root
+*.slcio
+
 CMakeLists.txt
 config/ecalConfiguration_Jun2022.txt
